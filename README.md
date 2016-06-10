@@ -9,15 +9,11 @@ Note, the plugin is aware of your ACLs.
 Specify a scope parameter that defines the output of the list of media files. The scope can be a “page id” or a “namespace”. 
 
   1. **Page id** : look up media files linked in the page (i.e. curly brackets `{{...}}` in page text).
-  2. **namespace** : look up media files stored the namespace. The parameter ends by `:` or `:*`, 
+  2. **namespace** : look up media files stored in the namespace. The parameter ends by `:` or `:*`, 
 
 Some replacement patterns for namespace templates --- `@ID@`, `@NS@`, `@PAGE@` --- are available 
 in order to specify the scope parameter.
 
-
-To list media files linked in the specific page, use:
-
-    {{medialist>wikipage}}
 
 To list media files linked in the current page use:
 
@@ -33,6 +29,7 @@ To list media files stored in the current namespace and its sub-namesapces use:
 
 More examples:
 
+    {{medialist>wikipage}}
     {{medialist>ns1:ns2:*}}
     {{medialist>@NS@:start}}
     {{medialist>@ID@:}}
