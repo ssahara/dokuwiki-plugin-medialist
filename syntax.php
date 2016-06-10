@@ -3,13 +3,13 @@
  * DokuWiki Syntax Plugin Medialist
  *
  * Show a list of media files (images/archives ...) referred in a given page
- * using curly brackets "{{...}}", or stored in a given namespace.
+ * or stored in a given namespace.
  *
  * Syntax:  {{medialist>[id]}}
- *          {{medialist>[ns]}}
+ *          {{medialist>[ns]:}} or {{medialist>[ns]:*}}
  *
- *   [id] - a valid wiki page id (use @PAGE@ for the current page)
- *   [ns] - a namespace (use @NAMESPACES@ for the current namespace)
+ *   [id] - a valid page id (use @ID@ for the current page)
+ *   [ns] - a namespace (use @NS@: for the current namespace)
  *
  * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author  Michael Klier <chi@chimeric.de>
@@ -45,14 +45,50 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         $match = substr($match, 12, -2);
 
         // process the match
-        if ($match == '@PAGE@') {
-            $params = array('mode' => 'page', 'id' => $ID );
-        } elseif ($match == '@NAMESPACE@') {
-            $params = array('mode' => 'ns',   'id' => getNS($ID) );
-        } elseif ($match == '@ALL@') {
-            $params = array('mode' => 'all',  'id' => $ID );
-        } elseif (@page_exists(cleanID($match))) {
-            $params = array('mode' => 'page', 'id' => cleanID($match) );
+        $params = array();
+
+        // v1 syntax (backword compatibility for 2009-05-21 release)
+        // @PAGE@, @NAMESPACE@, @ALL@ are complete keyword arguments,
+        // not replacement patterns.
+        switch ($match) {
+            case '@PAGE@':
+                $params = array('scope' => 'page', 'id' => $ID );
+                break;
+            case '@NAMESPACE@':
+                $params = array('scope' => 'ns',   'id' => getNS($ID) );
+                break;
+            case '@ALL@':
+            case '@BOTH@':
+                $params = array('scope' => 'both', 'id' => $ID );
+                break;
+        }
+
+        // v2 syntax (available since 2016-06-XX release)
+        // - enable replacement patterns @ID@, @NS@, @PAGE@
+        //   for media file search scope
+        // - Namespace search if scope parameter ends colon ":", and
+        //   require "*" after the colon for recursive search
+        if (empty($params)) {
+            $target = trim($match);
+
+            // namespace searach options
+            if (substr($target, -2) == ':*') {
+                $params['scope']  = 'ns';  // not set depth option
+            } elseif (substr($target, -1) == ':') {
+                $params['scope']  = 'ns';
+                $params['depth'] = 1;
+            } else {
+                $params['scope']  = 'page';
+            }
+            $target = rtrim($target, ':*');
+
+            // replacement patterns identical with Namespace Template
+            // @see https://www.dokuwiki.org/namespace_templates#syntax
+            $target = str_replace('@ID@', $ID, $target);
+            $target = str_replace('@NS@', getNS($ID), $target);
+            $target = str_replace('@PAGE@', noNS($ID), $target);
+
+            $params['id'] = cleanID($target);
         }
 
         return array($state, $params);
@@ -77,44 +113,53 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
      */
     protected function render_xhtml($data) {
         $out  = '';
-        $medialist = array();
+        $items = array();
 
         list($state, $params) = $data;
-        $id   = $params['id'];
-        $mode = $params['mode'];
-        $opt  = array(); // search option for lookup_stored_media()
+        $id    = $params['id'];
+        $scope = $params['scope'];
+
+        // search option for lookup_stored_media()
         if (array_key_exists('depth', $params)) {
-            $opt[] = array('depth' => $params['depth']);
+            $opt = array('depth' => $params['depth']);
+        } else {
+            $opt   = array();
         }
 
-        switch ($mode) {
+        switch ($scope) {
             case 'page':
                 $media = $this->_lookup_linked_media($id);
                 foreach ($media as $item) {
-                    $medialist[] = array('id' => $item, 'level' => 1);
+                    $items[] = array('level'=> 1, 'id'=> $item, 'base'=> getNS($item));
                 }
                 break;
             case 'ns':
                 $media = $this->_lookup_stored_media($id, $opt);
                 foreach ($media as $item) {
-                    $medialist[] = array('id' => $item, 'level' => 1);
+                    $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id);
                 }
                 break;
-            case 'all':
+            case 'both':
                 $linked_media = $this->_lookup_linked_media($id);
                 $stored_media = $this->_lookup_stored_media(getNS($id), $opt);
-                $media = array_unique(array_merge($linked_media, $stored_media));
+                $media = array_unique(array_merge($stored_media, $linked_media));
                 foreach ($media as $item) {
                     if (in_array($item, $linked_media)) {
-                        $medialist[] = array('id' => $item, 'level' => 1, 'linked' => 1);
+                        $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id, 'linked'=> 1);
                     } else {
-                        $medialist[] = array('id' => $item, 'level' => 1);
+                        $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id);
                     }
                 }
                 break;
         }
 
-        $out .= html_buildlist($medialist, 'medialist', array($this, '_media_item'));
+        if (!empty($items)) {
+            $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
+        } else {
+            $out .= '<div class="medialist info">';
+            $out .= '<strong>'.$this->getPluginName().'</strong>'.': nothing to show here.';
+            $out .= '</div>';
+        }
         return $out;
     }
 
@@ -130,13 +175,10 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
 
         $link = array();
         $link['url']    = ml($item['id']);
-        $link['class']  = 'media';
-        if (array_key_exists('linked', $item)) {
-            $link['class'] .= ' linked';
-        }
+        $link['class']  = isset($item['linked']) ? 'media linked' : 'media';
         $link['target'] = $conf['target']['media'];
-        $link['name']   = preg_replace('#.*?/|.*?:#','',$item['id']);
-        $link['title']  = $link['name'];
+        $link['title']  = noNS($item['id']);
+        $link['name']   = str_replace($item['base'].':','', $item['id']);
 
         // add file icons
         list($ext,$mime) = mimetype($item['id']);
@@ -170,7 +212,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         $linked_media = array();
 
         if (!page_exists($id)) {
-            msg('MediaList: page "'. hsc($id) . '" not exists!', -1); 
+            //msg('MediaList: page "'. hsc($id) . '" not exists!', -1); 
         }
 
         if (auth_quickaclcheck($id) >= AUTH_READ) {
@@ -201,7 +243,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         $dir = utf8_encodeFN(str_replace(':','/', $ns));
 
         if (!is_dir($conf['mediadir'] . '/' . $dir)) {
-            msg('MediaList: namespace "'. hsc($ns). '" not exists!', -1);
+            //msg('MediaList: namespace "'. hsc($ns). '" not exists!', -1);
         }
 
         if (auth_quickaclcheck("$ns:*") >= AUTH_READ) {
