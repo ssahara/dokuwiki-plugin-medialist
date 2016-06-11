@@ -1,5 +1,7 @@
 # MediaList Plugin for DokuWiki
 
+![example](https://github.com/ssahara/dokuwiki-plugin-medialist/raw/master/sample1.png)
+
 This plugin shows a list of media files referred in a given wikipage or 
 stored in a given namespace.
 Note, the plugin is aware of your ACLs.
