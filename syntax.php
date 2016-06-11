@@ -130,6 +130,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
             case 'page':
                 $media = $this->_lookup_linked_media($id);
                 foreach ($media as $item) {
+                    // note: base value is not valid for external link items
                     $items[] = array('level'=> 1, 'id'=> $item, 'base'=> getNS($item));
                 }
                 break;
@@ -178,7 +179,23 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         $link['class']  = isset($item['linked']) ? 'media linked' : 'media';
         $link['target'] = $conf['target']['media'];
         $link['title']  = noNS($item['id']);
-        $link['name']   = str_replace($item['base'].':','', $item['id']);
+
+        // link text and mediainfo
+        if (preg_match('#^https?://#', $item['id'])) {
+            // External link
+            $link['name'] = $item['id'];
+            $mediainfo = $lang['qb_extlink']; // External Link
+        } else {
+            // Internal file
+            if (array_key_exists('base', $item)) {
+                $link['name'] = str_replace($item['base'].':','', $item['id']);
+            } else {
+                $link['name'] = $item['id'];
+            }
+            $fn = mediaFN($item['id']);
+            $mediainfo  = strftime($conf['dformat'], filemtime($fn)).'&nbsp;';
+            $mediainfo .= filesize_h(filesize($fn));
+        }
 
         // add file icons
         list($ext,$mime) = mimetype($item['id']);
@@ -192,14 +209,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         $out .= 'title="' . $link['title'] . '">';
         $out .= $link['name'];
         $out .= '</a>';
-        $out .= '&nbsp;<span class="mediainfo">(';
-        if (preg_match('#^https?://#', $item['id'])) {
-            $out .= $lang['qb_extlink']; // External Link
-        } else {
-            $out .= strftime($conf['dformat'], filemtime(mediaFN($item['id']))).'&nbsp;';
-            $out .= filesize_h(filesize(mediaFN($item['id'])));
-        }
-        $out .= ')</span>' . DOKU_LF;
+        $out .= '&nbsp;<span class="mediainfo">('.$mediainfo.')</span>' . DOKU_LF;
 
         return $out;
     }
