@@ -26,27 +26,17 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
      * handler of content postprocess
      */
     public function handlePostProcess(Doku_Event $event, $param) {
+         global $INFO;
 
          // replace PLACEHOLDER
          if (strpos($event->data[1], '<!-- MEDIALIST -->') !== false) {
-             $html = $this->_medialist(); // medialist xhtml content
-
-             $event->data[1] = str_replace('<!-- MEDIALIST -->', $html, $event->data[1]);
+             if (isset($INFO['meta']['plugin_medialist']['params'])) {
+                 $params = $INFO['meta']['plugin_medialist']['params'];
+                 $medialist = $this->loadHelper('medialist');
+                 $html = $medialist->render_xhtml($params); // medialist xhtml content
+                 $event->data[1] = str_replace('<!-- MEDIALIST -->', $html, $event->data[1]);
+             }
          }
-    }
-
-    /**
-     * create xhtml of medialist
-     */
-    private function _medialist() {
-
-        $out = '';
-
-            $out .= '<div class="medialist info">';
-            $out .= '<strong>'.$this->getPluginName().'</strong>'.': nothing to show here.';
-            $out .= '</div>';
-        
-        return $out;
     }
 
 }
