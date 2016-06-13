@@ -99,12 +99,15 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
      */
     function render($format, Doku_Renderer $renderer, $data) {
 
-        if ($format == 'xhtml'){
-            // disable caching
-            $renderer->info['cache'] = false;
-            $medialist = $this->loadHelper('medialist');
-            $renderer->doc .= $medialist->render_xhtml($data);
-            return true;
+        list($state, $params) = $data;
+
+        switch ($format) {
+            case 'xhtml':
+                // disable caching
+                $renderer->info['cache'] = false;
+                $medialist = $this->loadHelper('medialist');
+                $renderer->doc .= $medialist->render_xhtml($params);
+                return true;
         }
         return false;
     }

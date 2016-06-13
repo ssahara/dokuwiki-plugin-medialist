@@ -15,11 +15,10 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
     /**
      * Renders xhtml
      */
-   public function render_xhtml($data) {
+   public function render_xhtml($params) {
         $out  = '';
         $items = array();
 
-        list($state, $params) = $data;
         $id    = $params['id'];
         $scope = $params['scope'];
 
