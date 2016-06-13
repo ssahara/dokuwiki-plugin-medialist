@@ -33,7 +33,9 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
              if (isset($INFO['meta']['plugin_medialist']['params'])) {
                  $params = $INFO['meta']['plugin_medialist']['params'];
                  $medialist = $this->loadHelper('medialist');
-                 $html = $medialist->render_xhtml($params); // medialist xhtml content
+
+                 // create medialist xhtml content
+                 $html = $medialist->render_xhtml($params);
                  $event->data[1] = str_replace('<!-- MEDIALIST -->', $html, $event->data[1]);
              }
          }
