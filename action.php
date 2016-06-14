@@ -24,21 +24,26 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
 
     /**
      * handler of content postprocess
+     *
+     * replace medialst placeholders in xhtml of the page
      */
     public function handlePostProcess(Doku_Event $event, $param) {
-         global $INFO;
 
-         // replace PLACEHOLDER
-         if (strpos($event->data[1], '<!-- MEDIALIST -->') !== false) {
-             if (isset($INFO['meta']['plugin_medialist']['params'])) {
-                 $params = $INFO['meta']['plugin_medialist']['params'];
-                 $medialist = $this->loadHelper('medialist');
+        $pattern = '#<!-- MEDIALIST:([^\r\n]+?) -->#';
 
-                 // create medialist xhtml content
-                 $html = $medialist->render_xhtml($params);
-                 $event->data[1] = str_replace('<!-- MEDIALIST -->', $html, $event->data[1]);
-             }
-         }
+        if ($event->data[0] == 'xhtml') {
+            // regular expression search and replace using anonymous function callback
+            $event->data[1] = preg_replace_callback( $pattern,
+                function ($matches) {
+                    $medialist = $this->loadHelper('medialist');
+                    $data = '{{medialist>'.$matches[1].'}}';
+                    $params = $medialist->parse($data);
+                    return $medialist->render_xhtml($params);
+                },
+                $event->data[1]
+            );
+        }
+
     }
 
 }

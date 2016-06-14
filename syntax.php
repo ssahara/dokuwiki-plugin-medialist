@@ -65,8 +65,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
                 }
                 return true;
             case 'metadata':
-                $renderer->meta['plugin_medialist']['params'] = $params;
-                return true;
+                return false;
         }
         return false;
     }
