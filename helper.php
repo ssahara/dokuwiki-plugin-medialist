@@ -1,6 +1,6 @@
 <?php
 /**
- * Helper Component for Medialist plugin
+ * Helper Component of Medialist plugin
  *
  * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author  Satoshi Sahara <sahara.satoshi@gmail.com>
@@ -10,6 +10,64 @@
 if (!defined('DOKU_INC')) die();
 
 class helper_plugin_medialist extends DokuWiki_Plugin {
+
+    /**
+     * syntax parser
+     *
+     * @param $data string matched the regex {{medialist>[^\r\n]+?}}
+     * @return array parameter for render process
+     */
+    public function parse($data) {
+        global $ID;
+
+        $match = substr($data, 12, -2);
+        $params = array();
+
+        // v1 syntax (backword compatibility for 2009-05-21 release)
+        // @PAGE@, @NAMESPACE@, @ALL@ are complete keyword arguments,
+        // not replacement patterns.
+        switch ($match) {
+            case '@PAGE@':
+                $params = array('scope' => 'page', 'id' => $ID );
+                break;
+            case '@NAMESPACE@':
+                $params = array('scope' => 'ns',   'id' => getNS($ID) );
+                break;
+            case '@ALL@':
+            case '@BOTH@':
+                $params = array('scope' => 'both', 'id' => $ID );
+                break;
+        }
+
+        // v2 syntax (available since 2016-06-XX release)
+        // - enable replacement patterns @ID@, @NS@, @PAGE@
+        //   for media file search scope
+        // - Namespace search if scope parameter ends colon ":", and
+        //   require "*" after the colon for recursive search
+        if (empty($params)) {
+            $target = trim($match);
+
+            // namespace searach options
+            if (substr($target, -2) == ':*') {
+                $params['scope']  = 'ns';  // not set depth option
+            } elseif (substr($target, -1) == ':') {
+                $params['scope']  = 'ns';
+                $params['depth']  = 1;
+            } else {
+                $params['scope']  = 'page';
+            }
+            $target = rtrim($target, ':*');
+
+            // replacement patterns identical with Namespace Template
+            // @see https://www.dokuwiki.org/namespace_templates#syntax
+            $target = str_replace('@ID@', $ID, $target);
+            $target = str_replace('@NS@', getNS($ID), $target);
+            $target = str_replace('@PAGE@', noNS($ID), $target);
+
+            $params['id'] = cleanID($target);
+        }
+        return $params;
+   }
 
 
     /**
