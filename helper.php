@@ -163,7 +163,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $class = preg_replace('/[^_\-a-z0-9]+/i','_',$ext);
         $link['class'] .= ' mediafile mf_'.$class;
 
-        // build the link
+        // build the list item
+        $out .= '<input type="checkbox" name="delete['.$item['id'].']" />';
         $out .= '<a href="' . $link['url'] . '" ';
         $out .= 'class="' . $link['class'] . '" ';
         $out .= 'target="' . $link['target'] . '" ';

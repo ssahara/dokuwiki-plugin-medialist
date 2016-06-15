@@ -7,6 +7,9 @@
   list-style: none;
   margin-left: 0;
 }
+.dokuwiki ul.medialist input[type=checkbox] {
+  margin-right: .2em;
+}
 .dokuwiki ul.medialist a.linked {
   font-weight: bold;
 }
