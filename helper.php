@@ -74,47 +74,50 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * Renders xhtml
      */
    public function render_xhtml($params) {
-        $out  = '';
-        $items = array();
 
-        $id    = $params['id'];
         $scope = $params['scope'];
+        $id    = $params['id'];
 
         // search option for lookup_stored_media()
         if (array_key_exists('depth', $params)) {
             $opt = array('depth' => $params['depth']);
         } else {
-            $opt   = array();
+            $opt = array();
         }
 
+        // prepare list items
+        $items = array();
         switch ($scope) {
             case 'page':
                 $media = $this->_lookup_linked_media($id);
                 foreach ($media as $item) {
-                    // note: base value is not valid for external link items
-                    $items[] = array('level'=> 1, 'id'=> $item, 'base'=> getNS($item));
+                    $items[] = $item + array('level' => 1, 'base' => getNS($item['id']));
                 }
                 break;
             case 'ns':
                 $media = $this->_lookup_stored_media($id, $opt);
                 foreach ($media as $item) {
-                    $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id);
+                    $items[] = $item + array('level' => 1, 'base' => $id);
                 }
                 break;
             case 'both':
                 $linked_media = $this->_lookup_linked_media($id);
                 $stored_media = $this->_lookup_stored_media(getNS($id), $opt);
-                $media = array_unique(array_merge($stored_media, $linked_media));
+                $media = array_unique(array_merge($stored_media, $linked_media), SORT_REGULAR);
+
                 foreach ($media as $item) {
                     if (in_array($item, $linked_media)) {
-                        $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id, 'linked'=> 1);
+                        $item = $item + array('level' => 1, 'base' => $id, 'linked'=> 1);
                     } else {
-                        $items[] = array('level'=> 1, 'id'=> $item, 'base'=> $id);
+                        $item = $item + array('level' => 1, 'base' => $id);
                     }
+                    $items[] = $item;
                 }
                 break;
         }
 
+        // create output
+        $out  = '';
         if (!empty($items)) {
             $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
         } else {
@@ -142,20 +145,19 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $link['title']  = noNS($item['id']);
 
         // link text and mediainfo
-        if (preg_match('#^https?://#', $item['id'])) {
-            // External link
-            $link['name'] = $item['id'];
-            $mediainfo = $lang['qb_extlink']; // External Link
-        } else {
+        if ($item['type'] == 'internalmedia') {
             // Internal file
             if (array_key_exists('base', $item)) {
                 $link['name'] = str_replace($item['base'].':','', $item['id']);
             } else {
                 $link['name'] = $item['id'];
             }
-            $fn = mediaFN($item['id']);
-            $mediainfo  = strftime($conf['dformat'], filemtime($fn)).'&nbsp;';
-            $mediainfo .= filesize_h(filesize($fn));
+            $mediainfo  = strftime($conf['dformat'], $item['mtime']).'&nbsp;';
+            $mediainfo .= filesize_h($item['size']);
+        } else {
+            // External link
+            $link['name'] = $item['id'];
+            $mediainfo = $lang['qb_extlink']; // External Link
         }
 
         // add file icons
@@ -164,7 +166,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $link['class'] .= ' mediafile mf_'.$class;
 
         // build the list item
-        $out .= '<input type="checkbox" name="delete['.$item['id'].']" />';
+        $out .= '<input type="checkbox" id="delete['.$item['id'].']" />';
+        $out .= '<label for="delete['.$item['id'].']">'.'</label>';
         $out .= '<a href="' . $link['url'] . '" ';
         $out .= 'class="' . $link['class'] . '" ';
         $out .= 'target="' . $link['target'] . '" ';
@@ -195,13 +198,26 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
             // get linked media files
             foreach ($ins as $node) {
                 if ($node[0] == 'internalmedia') {
-                    $linked_media[] = cleanID($node[1][0]);
+                    $id = cleanID($node[1][0]);
+                    $fn = mediaFN($id);
+                    $linked_media[] = array(
+                        'id'    => $id,
+                        'size'  => filesize($fn),
+                        'mtime' => filemtime($fn),
+                        'type'  => $node[0],
+                    );
                 } elseif ($node[0] == 'externalmedia') {
-                    $linked_media[] = $node[1][0];
+                    $linked_media[] = array(
+                        'id'    => $node[1][0],
+                        'size'  => null,
+                        'mtime' => null,
+                        'type'  => $node[0],
+                    );
                 }
             }
+
         }
-        return array_unique($linked_media);
+        return array_unique($linked_media, SORT_REGULAR);
     }
 
     /**
@@ -220,15 +236,19 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         }
 
         if (auth_quickaclcheck("$ns:*") >= AUTH_READ) {
-            // get mediafiles of current namespace
+            // search media files in the namespace
             $res = array(); // search result
             search($res, $conf['mediadir'], 'search_media', $opt, $dir);
 
             foreach ($res as $item) {
-                $intern_media[] = $item['id'];
+                $stored_media[] = array(
+                        'id'    => $item['id'],
+                        'size'  => $item['size'],
+                        'mtime' => $item['mtime'],
+                        'type'  => 'internalmedia',
             }
         }
-        return $intern_media;
+        return $stored_media;
     }
 
 }
