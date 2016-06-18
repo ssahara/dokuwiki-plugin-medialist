@@ -7,8 +7,23 @@
   list-style: none;
   margin-left: 0;
 }
+.dokuwiki ul.medialist li {
+  margin-left: 1.2em;
+  text-indent: -1.2em;
+}
 .dokuwiki ul.medialist input[type=checkbox] {
-  margin-right: .2em;
+  font-size: 100%;
+  width: 1.2em;
+  opacity: 0.00;
+}
+.dokuwiki ul.medialist input[type=checkbox] + label::before {
+  display: inline-block;
+  content: "\2610"; /* ballot box */
+  vertical-align: top;
+  opacity: 0.40;
+}
+.dokuwiki ul.medialist input[type=checkbox]:checked + label::before {
+  content: "\2611"; /* ballot box with check */
 }
 .dokuwiki ul.medialist a.linked {
   font-weight: bold;
