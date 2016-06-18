@@ -240,12 +240,14 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
             $res = array(); // search result
             search($res, $conf['mediadir'], 'search_media', $opt, $dir);
 
+            // prepare return array
             foreach ($res as $item) {
                 $stored_media[] = array(
                         'id'    => $item['id'],
                         'size'  => $item['size'],
                         'mtime' => $item['mtime'],
                         'type'  => 'internalmedia',
+                );
             }
         }
         return $stored_media;
