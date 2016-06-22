@@ -95,14 +95,16 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
                 }
                 break;
             case 'ns':
-                $media = $this->_lookup_stored_media($id, $opt);
+                $ns = $id;
+                $media = $this->_lookup_stored_media($ns, $opt);
                 foreach ($media as $item) {
                     $items[] = $item + array('level' => 1, 'base' => $id);
                 }
                 break;
             case 'both':
+                $ns = getNS($id);
                 $linked_media = $this->_lookup_linked_media($id);
-                $stored_media = $this->_lookup_stored_media(getNS($id), $opt);
+                $stored_media = $this->_lookup_stored_media($ns, $opt);
                 $media = array_unique(array_merge($stored_media, $linked_media), SORT_REGULAR);
 
                 foreach ($media as $item) {
@@ -118,13 +120,23 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
 
         // create output
         $out  = '';
+        $out .= '<div class="medialist">'. DOKU_LF;
         if (!empty($items)) {
+            // mediamanager button
+            if ($ns && (auth_quickaclcheck($ns) >= AUTH_DELETE)) {
+                $out .= '<div class="mediamanager">';
+                $out .= $this->_mediamanager_button($ns);
+                $out .= '</div>'. DOKU_LF;
+            }
+            // list
             $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
+            $out .= DOKU_LF;
         } else {
-            $out .= '<div class="medialist info">';
+            $out .= '<div class="info">';
             $out .= '<strong>'.$this->getPluginName().'</strong>'.': nothing to show here.';
-            $out .= '</div>';
+            $out .= '</div>'. DOKU_LF;;
         }
+        $out .= '</div>'. DOKU_LF;
         return $out;
     }
 
@@ -177,6 +189,19 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $out .= '&nbsp;<span class="mediainfo">('.$mediainfo.')</span>' . DOKU_LF;
 
         return $out;
+    }
+
+    /**
+     * button to open a given namespace with the Fullscreen Media Manager
+     */
+    protected function _mediamanager_button($ns) {
+        global $ID, $lang;
+
+        $params  = array('do' => 'media', 'ns' => $ns);
+        $method  = 'get';
+        $label   = $ns;
+        $tooltip = $lang['btn_media'];
+        return html_btn('media', $ID, $accesskey, $params, $method, $tooltip, $label);
     }
 
 
