@@ -60,10 +60,12 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
                 if (in_array($ACT, array('preview'))) {
                     $renderer->doc .= $medialist->render_xhtml($params);
                 } else {
-                    $renderer->info['cache'] = false; // rendered result may not cached
-                    $renderer->doc .= $medialist->render_xhtml($params);
-                    // output place holder, which will be replaced in action component
-                    //$renderer->doc .= '<!-- MEDIALIST:'. substr($match, 12, -2) .' -->'.DOKU_LF;
+                    // output placeholder which will be replaced in action component
+                    $renderer->doc .= '<!-- MEDIALIST:'. substr($match, 12, -2) .' -->'.DOKU_LF;
+
+                    // another implementation: reqires disabling xhtml cache of whole page...
+                    //$renderer->info['cache'] = false; // rendered result may not cached
+                    //$renderer->doc .= $medialist->render_xhtml($params);
                 }
                 return true;
             case 'metadata':
