@@ -6,6 +6,9 @@ This plugin shows a list of media files referred in a given wikipage or
 stored in a given namespace.
 Note, the plugin is aware of your ACLs.
 
+In the namespace mode list, the button to open the namespace by the Fullscreen
+Media Manager is shown at the upper-right corner of the list area.
+
 ## Usage
 
 Specify a scope parameter that defines the output of the list of media files. The scope can be a “page id” or a “namespace”. 
