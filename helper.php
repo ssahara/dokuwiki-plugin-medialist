@@ -123,7 +123,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $out .= '<div class="medialist">'. DOKU_LF;
         if (!empty($items)) {
             // mediamanager button
-            if ($ns && (auth_quickaclcheck($ns) >= AUTH_DELETE)) {
+            if (isset($ns) && (auth_quickaclcheck("$ns:*") >= AUTH_DELETE)) {
                 $out .= '<div class="mediamanager">';
                 $out .= $this->_mediamanager_button($ns);
                 $out .= '</div>'. DOKU_LF;
@@ -199,7 +199,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
 
         $params  = array('do' => 'media', 'ns' => $ns);
         $method  = 'get';
-        $label   = $ns;
+        $label   = hsc("$ns:*");
         $tooltip = $lang['btn_media'];
         return html_btn('media', $ID, $accesskey, $params, $method, $tooltip, $label);
     }
@@ -225,6 +225,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
                 if ($node[0] == 'internalmedia') {
                     $id = cleanID($node[1][0]);
                     $fn = mediaFN($id);
+                    if (!file_exists($fn)) continue;
                     $linked_media[] = array(
                         'id'    => $id,
                         'size'  => filesize($fn),

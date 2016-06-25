@@ -61,7 +61,7 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
                     $renderer->doc .= $medialist->render_xhtml($params);
                 } else {
                     // output placeholder which will be replaced in action component
-                    $renderer->doc .= '<!-- MEDIALIST:'. substr($match, 12, -2) .' -->'.DOKU_LF;
+                    $renderer->doc .= '<!-- MEDIALIST '. substr($match, 12, -2) .' -->'.DOKU_LF;
 
                     // another implementation: reqires disabling xhtml cache of whole page...
                     //$renderer->info['cache'] = false; // rendered result may not cached
