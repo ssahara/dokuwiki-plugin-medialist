@@ -18,18 +18,21 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * @return array parameter for render process
      *
      * -----------------------------------------------------------------------
-     *  {{pagelist>ns}}
+     * [ns:]   namespace, must end ":" or ":*"
+     * [page]  page id
+     * 
+     *  {{pagelist>ns:}}
      *       - show media files in the given namespace
-     *       - show button to open a given ns by fullscreen media manager
-     *  {{pagelist>ns page}}
+     *       - show button to open the given ns by fullscreen media manager
+     *  {{pagelist>ns: page}}
      *       - distinguish linked files in the page if they found in the list
-     *  {{pagelist>ns +page}}
+     *  {{pagelist>ns: +page}}
      *       - add linked media files to the list (@BOTH@)
      * 
      *  {{pagelist>page}}
      *       - show media files linked in the given page
-     *  {{pagelist>page ns}}
-     *       - show button to open a given ns by fullscreen media manager
+     *  {{pagelist>page ns:}}
+     *       - show button to open the given ns by fullscreen media manager
      * -----------------------------------------------------------------------
      */
     public function parse($data) {
@@ -84,7 +87,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
                 $params['page'] = ltrim($args[1], '+');
                 $params['append'] = (bool) ($args[1][0] == '+');
             } else {
-                $params['uploadns'] = $args[1];
+                $params['uploadns'] = rtrim($args[1],':');
             }
         }
         return $params;
