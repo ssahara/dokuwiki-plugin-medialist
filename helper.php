@@ -253,7 +253,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
     protected function _lookup_stored_media($ns, $opt=array('depth'=>1)) {
         global $conf;
 
-        $intern_media = array();
+        $stored_media = array();
 
         $dir = utf8_encodeFN(str_replace(':','/', $ns));
 
