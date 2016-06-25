@@ -121,14 +121,17 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         // create output
         $out  = '';
         $out .= '<div class="medialist">'. DOKU_LF;
+
+        // mediamanager button
+        $tab = empty($items) ? 'upload' : 'files';
+        if (isset($ns) && (auth_quickaclcheck("$ns:*") >= AUTH_UPLOAD)) {
+            $out .= '<div class="mediamanager">';
+            $out .= $this->_mediamanager_button($ns, $tab);
+            $out .= '</div>'. DOKU_LF;
+        }
+
+        // list of media files
         if (!empty($items)) {
-            // mediamanager button
-            if (isset($ns) && (auth_quickaclcheck("$ns:*") >= AUTH_DELETE)) {
-                $out .= '<div class="mediamanager">';
-                $out .= $this->_mediamanager_button($ns);
-                $out .= '</div>'. DOKU_LF;
-            }
-            // list
             $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
             $out .= DOKU_LF;
         } else {
@@ -193,14 +196,20 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
 
     /**
      * button to open a given namespace with the Fullscreen Media Manager
+     * @param $ns  string namespace
+     * @param $tab string tab name of MediaManager (files|upload|search)
+     * @return string html
      */
-    protected function _mediamanager_button($ns) {
+    protected function _mediamanager_button($ns, $tab=null) {
         global $ID, $lang;
 
-        $params  = array('do' => 'media', 'ns' => $ns);
         $method  = 'get';
+        $params  = array('do' => 'media', 'ns' => $ns);
+        if (in_array($tab, array('files','upload','search'))) {
+            $params += array('tab_files' => $tab);
+        }
         $label   = hsc("$ns:*");
-        $tooltip = $lang['btn_media'];
+        $tooltip = ($tab == 'upload') ? $lang['btn_upload'] :$lang['btn_media'];
         return html_btn('media', $ID, $accesskey, $params, $method, $tooltip, $label);
     }
 
