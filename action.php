@@ -31,8 +31,8 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
 
         if ($ACT != 'show') return;
 
-        $pattern = '#<!-- MEDIALIST ([^\r\n]+?) -->#';
-        if (strpos($event->data, substr($pattern, 1, 15)) !== false) {
+        $pattern = '#<!-- MEDIALIST:([^\r\n]+?) -->#';
+        if (strpos($event->data, substr($pattern, 1, 14)) !== false) {
 
             // regular expression search and replace using anonymous function callback
             $event->data = preg_replace_callback( $pattern,
