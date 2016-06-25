@@ -225,6 +225,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
                 if ($node[0] == 'internalmedia') {
                     $id = cleanID($node[1][0]);
                     $fn = mediaFN($id);
+                    if (!file_exists($fn)) continue;
                     $linked_media[] = array(
                         'id'    => $id,
                         'size'  => filesize($fn),
