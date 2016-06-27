@@ -120,7 +120,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         if ($params['append']) {
             $media = array_unique(array_merge($stored_media, $linked_media), SORT_REGULAR);
         } else {
-            $media = ($params['ns']) ? $stored_media : $linked_media;
+            $media = isset($params['ns']) ? $stored_media : $linked_media;
             if (!$params['ns'] && $params['page']) {
                 $linked_media = array();
             }
