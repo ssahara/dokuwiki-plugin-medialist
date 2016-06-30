@@ -36,7 +36,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * -----------------------------------------------------------------------
      */
     public function parse($data) {
-        global $ID;
+        global $INFO;
 
         $params = array(); // parameter array for render process
 
@@ -65,9 +65,9 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         // replacement patterns identical with Namespace Template
         // @see https://www.dokuwiki.org/namespace_templates#syntax
         $args = $match;
-        $args = str_replace('@ID@', $ID, $args);
-        $args = str_replace('@NS@', getNS($ID), $args);
-        $args = str_replace('@PAGE@', noNS($ID), $args);
+        $args = str_replace('@ID@', $INFO['id'], $args);
+        $args = str_replace('@NS@', getNS($INFO['id']), $args);
+        $args = str_replace('@PAGE@', noNS($INFO['id']), $args);
 
         $args = explode(' ', $args, 2);
 
@@ -224,7 +224,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * @return string html
      */
     protected function _mediamanager_button($ns, $tab=null) {
-        global $ID, $lang;
+        global $INFO, $lang;
 
         $method  = 'get';
         $params  = array('do' => 'media', 'ns' => $ns);
@@ -233,7 +233,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         }
         $label   = hsc("$ns:*");
         $tooltip = ($tab == 'upload') ? $lang['btn_upload'] :$lang['btn_media'];
-        return html_btn('media', $ID, $accesskey, $params, $method, $tooltip, $label);
+        return html_btn('media', $INFO['id'], $accesskey, $params, $method, $tooltip, $label);
     }
 
 
