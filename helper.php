@@ -156,7 +156,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         if (!empty($items)) {
             $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
             $out .= DOKU_LF;
-        } else {
+        } elseif ($this->getConf('emptyInfo')) {
             $out .= '<div class="info">';
             $out .= '<strong>'.$this->getPluginName().'</strong>'.': nothing to show here.';
             $out .= '</div>'. DOKU_LF;;
@@ -204,8 +204,10 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $link['class'] .= ' mediafile mf_'.$class;
 
         // build the list item
-        $out .= '<input type="checkbox" id="delete['.$item['id'].']" />';
-        $out .= '<label for="delete['.$item['id'].']">'.'</label>';
+        if ($this->getConf('checkboxes')) {
+            $out .= '<input type="checkbox" id="delete['.$item['id'].']" />';
+            $out .= '<label for="delete['.$item['id'].']">'.'</label>';
+        }
         $out .= '<a href="' . $link['url'] . '" ';
         $out .= 'class="' . $link['class'] . '" ';
         $out .= 'target="' . $link['target'] . '" ';
