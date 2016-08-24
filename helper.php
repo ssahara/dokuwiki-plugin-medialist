@@ -117,7 +117,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
             $linked_media = $this->_lookup_linked_media($params['page']);
         }
 
-        if ($params['append']) {
+        if (isset($params['append']) && $params['append']) {
             $media = array_unique(array_merge($stored_media, $linked_media), SORT_REGULAR);
         } else {
             $media = isset($params['ns']) ? $stored_media : $linked_media;
@@ -144,7 +144,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $out .= '<div class="medialist">'. DOKU_LF;
 
         // mediamanager button
-        $uploadns = $params['uploadns'] ?: $params['ns'];
+        $uploadns = isset($params['uploadns']) ? $params['uploadns'] : $params['ns'];
         $tab = empty($items) ? 'upload' : 'files';
         if (isset($uploadns) && (auth_quickaclcheck("$uploadns:*") >= AUTH_UPLOAD)) {
             $out .= '<div class="mediamanager">';
@@ -235,6 +235,7 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         }
         $label   = hsc("$ns:*");
         $tooltip = ($tab == 'upload') ? $lang['btn_upload'] :$lang['btn_media'];
+        $accesskey = '';
         return html_btn('media', $INFO['id'], $accesskey, $params, $method, $tooltip, $label);
     }
 
