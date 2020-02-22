@@ -5,18 +5,15 @@
  * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author  Satoshi Sahara <sahara.satoshi@gmail.com>
  */
-
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-
-class action_plugin_medialist extends DokuWiki_Action_Plugin {
-
+class action_plugin_medialist extends DokuWiki_Action_Plugin
+{
     /**
      * Register event handlers
      */
-    public function register(Doku_Event_Handler $controller) {
+    public function register(Doku_Event_Handler $controller)
+    {
         $controller->register_hook(
-            'RENDERER_CONTENT_POSTPROCESS', 'AFTER', $this, 'handle_postprocess', array()
+            'RENDERER_CONTENT_POSTPROCESS', 'AFTER', $this, 'handle_postprocess', []
         );
     }
 
@@ -26,7 +23,8 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
      *
      * replace medialst placeholders in xhtml of the page
      */
-    public function handle_postprocess(Doku_Event $event, $param) {
+    public function handle_postprocess(Doku_Event $event, $param)
+    {
         global $ACT;
 
         if ($ACT != 'show') return;
@@ -47,6 +45,4 @@ class action_plugin_medialist extends DokuWiki_Action_Plugin {
             return true;
         }
     }
-
 }
-

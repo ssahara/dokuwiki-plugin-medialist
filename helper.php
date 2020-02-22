@@ -5,12 +5,8 @@
  * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author  Satoshi Sahara <sahara.satoshi@gmail.com>
  */
-
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-
-class helper_plugin_medialist extends DokuWiki_Plugin {
-
+class helper_plugin_medialist extends DokuWiki_Plugin
+{
     /**
      * syntax parser
      *
@@ -35,7 +31,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      *       - show button to open the given ns by fullscreen media manager
      * -----------------------------------------------------------------------
      */
-    public function parse($data) {
+    public function parse($data)
+    {
         global $INFO;
 
         $params = array(); // parameter array for render process
@@ -97,8 +94,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
     /**
      * Renders xhtml
      */
-    public function render_xhtml($params) {
-
+    public function render_xhtml($params)
+    {
         $linked_media = array();
         $stored_media = array();
 
@@ -109,12 +106,12 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
             if (array_key_exists('depth', $params)) {
                 $opt = $opt + array('depth' => $params['depth']);
             }
-            $stored_media = $this->_lookup_stored_media($params['ns'], $opt);
+            $stored_media = $this->lookupStoredMedia($params['ns'], $opt);
         }
 
         // search linked/used media in the given page
         if (isset($params['page'])) {
-            $linked_media = $this->_lookup_linked_media($params['page']);
+            $linked_media = $this->lookupLinkedMedia($params['page']);
         }
 
         if (isset($params['append']) && $params['append']) {
@@ -148,13 +145,13 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         $tab = empty($items) ? 'upload' : 'files';
         if (isset($uploadns) && (auth_quickaclcheck("$uploadns:*") >= AUTH_UPLOAD)) {
             $out .= '<div class="mediamanager">';
-            $out .= $this->_mediamanager_button($uploadns, $tab);
+            $out .= $this->button($uploadns, $tab);
             $out .= '</div>'. DOKU_LF;
         }
 
         // list of media files
         if (!empty($items)) {
-            $out .= html_buildlist($items, 'medialist', array($this, '_media_item'));
+            $out .= html_buildlist($items, 'medialist', [$this, 'cb_media_item']);
             $out .= DOKU_LF;
         } elseif ($this->getConf('emptyInfo')) {
             $out .= '<div class="info">';
@@ -170,7 +167,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      *
      * @author Michael Klier <chi@chimeric.de>
      */
-    public function _media_item($item) {
+    public function cb_media_item($item)
+    {
         global $conf, $lang;
 
         $out = '';
@@ -225,7 +223,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * @param $tab string tab name of MediaManager (files|upload|search)
      * @return string html
      */
-    protected function _mediamanager_button($ns, $tab=null) {
+    protected function button($ns, $tab=null)
+    {
         global $INFO, $lang;
 
         $method  = 'get';
@@ -244,7 +243,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * searches media files linked in the given page
      * returns an array of items
      */
-    protected function _lookup_linked_media($id) {
+    protected function lookupLinkedMedia($id)
+    {
         $linked_media = array();
 
         if (!page_exists($id)) {
@@ -285,7 +285,8 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
      * searches media files stored in the given namespace and sub-tiers
      * returns an array of items
      */
-    protected function _lookup_stored_media($ns, $opt=array('depth'=>1)) {
+    protected function lookupStoredMedia($ns, $opt=['depth'=>1])
+    {
         global $conf;
 
         $stored_media = array();
@@ -313,6 +314,4 @@ class helper_plugin_medialist extends DokuWiki_Plugin {
         }
         return $stored_media;
     }
-
 }
-

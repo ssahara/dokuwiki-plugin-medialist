@@ -15,15 +15,8 @@
  * @author  Michael Klier <chi@chimeric.de>
  * @author  Satoshi Sahara <sahara.satoshi@gmail.com>
  */
-// must be run within DokuWiki
-if(!defined('DOKU_INC')) die();
-
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
-class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
-
+class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin
+{
     protected $pattern = '{{medialist>[^\r\n]+?}}';
 
     function getType()  { return 'substition'; }
@@ -33,21 +26,24 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode) {
+    public function connectTo($mode)
+    {
         $this->Lexer->addSpecialPattern($this->pattern, $mode, 'plugin_medialist');
     }
 
     /**
      * Handle the match
      */
-    function handle($match, $state, $pos, Doku_Handler $handler) {
+    public function handle($match, $state, $pos, Doku_Handler $handler)
+    {
         return array($state, $match);
     }
 
     /**
      * Create output
      */
-    function render($format, Doku_Renderer $renderer, $data) {
+    public function render($format, Doku_Renderer $renderer, $data)
+    {
         global $ACT;
 
         list($state, $match) = $data;
@@ -73,5 +69,4 @@ class syntax_plugin_medialist extends DokuWiki_Syntax_Plugin {
         }
         return false;
     }
-
 }
